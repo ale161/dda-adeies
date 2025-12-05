@@ -7,19 +7,21 @@ import { fontBoldBase64 } from "./fonts/Roboto-Bold-bold"; // We will need to cr
 
 // Helper to load fonts if not already loaded
 const loadFonts = (doc: jsPDF) => {
-  if (!doc.existsFileInVFS("Roboto-Regular.ttf")) {
+  // Always add file to VFS first, then add font.
+  // Check if font is already added to avoid duplicates/errors, but VFS overwrite is safe.
+  
+  try {
+    // Add Regular
     doc.addFileToVFS("Roboto-Regular.ttf", fontBase64);
     doc.addFont("Roboto-Regular.ttf", "Roboto", "normal");
-  }
-  if (!doc.existsFileInVFS("Roboto-Bold.ttf")) {
+
+    // Add Bold
     doc.addFileToVFS("Roboto-Bold.ttf", fontBoldBase64);
-    doc.addFont("Roboto-Bold.ttf", "Roboto", "bold"); // Using regular as bold fallback for now if bold missing, but ideally use bold
-    // Actually let's assume we have both. If not, we'll handle it.
-    // For this implementation, I will use a standard font that supports Greek if possible, 
-    // but jsPDF standard fonts don't support Greek. We MUST add a custom font.
-    // I will generate a placeholder font file content in a separate step or use a CDN approach if possible, 
-    // but for a static app, embedding is best.
+    doc.addFont("Roboto-Bold.ttf", "Roboto", "bold");
+  } catch (e) {
+    console.error("Error loading fonts:", e);
   }
+
   doc.setFont("Roboto");
 };
 
