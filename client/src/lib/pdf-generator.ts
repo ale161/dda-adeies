@@ -7,9 +7,11 @@ import { fontBoldBase64 } from "./fonts/Roboto-Bold-bold"; // We will need to cr
 
 // Helper to load fonts if not already loaded
 const loadFonts = (doc: jsPDF) => {
-  // Always add file to VFS first, then add font.
-  // Check if font is already added to avoid duplicates/errors, but VFS overwrite is safe.
-  
+  // Check if font is already added to avoid duplicates/errors
+  if (doc.getFontList().Roboto) {
+    return;
+  }
+
   try {
     // Add Regular
     doc.addFileToVFS("Roboto-Regular.ttf", fontBase64);
@@ -21,8 +23,6 @@ const loadFonts = (doc: jsPDF) => {
   } catch (e) {
     console.error("Error loading fonts:", e);
   }
-
-  doc.setFont("Roboto");
 };
 
 export const generatePDF = (data: LeaveApplicationData) => {
@@ -115,6 +115,7 @@ export const generatePDF = (data: LeaveApplicationData) => {
   y += (lineHeight * splitLeave.length);
 
   // Reason
+  // Ensure font is set after loading
   doc.setFont("Roboto", "bold");
   doc.text("ΛΟΓΟΙ:", leftCol, y);
   doc.setFont("Roboto", "normal");
