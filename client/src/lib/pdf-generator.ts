@@ -33,9 +33,10 @@ export const generatePDF = (data: LeaveApplicationData) => {
   
   loadFonts(doc);
 
-  const office = PROSECUTOR_OFFICES.find(o => o.id === data.officeId)?.name || "";
+  const officeData = PROSECUTOR_OFFICES.find(o => o.id === data.officeId);
+  const officeName = officeData?.name || "";
   const leaveType = LEAVE_TYPES.find(l => l.id === data.leaveTypeId);
-  const leaveTypeName = leaveType?.label || "";
+  const leaveTypeName = leaveType ? `${leaveType.group}.${leaveType.groupIndex}] ${leaveType.label}` : "";
   const leaveTypeCode = leaveType?.code || "";
 
   // --- Header ---
@@ -49,21 +50,30 @@ export const generatePDF = (data: LeaveApplicationData) => {
   doc.text("ΠΟΛΙΤΙΚΟΣ ΤΟΜΕΑΣ", 20, 45);
   
   // Split office name if too long
-  const splitOffice = doc.splitTextToSize(office, 80);
+  const splitOffice = doc.splitTextToSize(officeName, 80);
   doc.text(splitOffice, 20, 50);
 
   doc.setFont("Roboto", "normal");
   doc.setFontSize(9);
-  doc.text("XXXXXXXXXX", 20, 60); // Placeholder from template
   
-  doc.text(`Ταχ. Διεύθυνση: ${data.contactAddress}`, 20, 70);
-  doc.text(`Ταχ. Κώδικας: ${data.contactPostalCode}`, 20, 75);
-  doc.text(`Τηλέφωνο: ${data.contactPhone}`, 20, 80);
-  doc.text(`Email: ${data.contactEmail}`, 20, 85);
+  doc.text(`Ταχ. Διεύθυνση: ${data.contactAddress}`, 20, 65);
+  doc.text(`Ταχ. Κώδικας: ${data.contactPostalCode}`, 20, 70);
+  doc.text(`Τηλέφωνο: ${data.contactPhone}`, 20, 75);
+  doc.text(`Email: ${data.contactEmail}`, 20, 80);
 
   doc.setFontSize(10);
   doc.text(`ΗΜ/ΜΜ/ΕΤΟΣ: ${format(data.dateRequest, "dd/MM/yyyy")}`, 150, 20);
   doc.text("Αρ. Πρωτ.", 150, 25);
+
+  // --- ΠΡΟΣ ---
+  doc.setFont("Roboto", "bold");
+  doc.text("ΠΡΟΣ:", 150, 40);
+  doc.setFont("Roboto", "normal");
+  doc.text("Υπουργείο Δικαιοσύνης", 150, 45);
+  doc.text("Δ/νση Ανθρώπινου Δυναμικού", 150, 50);
+  doc.text("και Οργάνωσης", 150, 55);
+  doc.text("Τμήμα Διοίκησης", 150, 60);
+  doc.text("Ανθρώπινου Δυναμικού", 150, 65);
 
   // --- Title ---
   doc.setFontSize(14);
@@ -125,15 +135,21 @@ export const generatePDF = (data: LeaveApplicationData) => {
   const sigY = 240;
   
   doc.setFont("Roboto", "bold");
-  doc.text("Ο/Η ΑΙΤ", 30, sigY);
+  const applicantTitle = data.applicantGender === "M" ? "Ο ΑΙΤΩΝ" : "Η ΑΙΤΟΥΣΑ";
+  doc.text(applicantTitle, 30, sigY);
   doc.text("ΣΥΜΦΩΝΩ", 100, sigY);
   
-  doc.text("Ο/Η Κ. ΕΙΣΑΓΓΕΛΕΑΣ/Κ. ΠΡΟΕΔΡΟΣ", 30, sigY + 15);
+  const headTitle = officeData?.hasProsecutor 
+    ? (officeData.headGender === "M" ? "Ο Κ. ΕΙΣΑΓΓΕΛΕΑΣ" : "Η Κ. ΕΙΣΑΓΓΕΛΕΑΣ")
+    : (officeData?.headGender === "M" ? "Ο Κ. ΠΡΟΕΔΡΟΣ" : "Η Κ. ΠΡΟΕΔΡΟΣ");
+    
+  doc.text(headTitle, 30, sigY + 15);
   doc.text("Ο/Η ΠΡΟΪΣΤΑΜ.........", 140, sigY + 15);
   doc.text("ΤΟΥ ΤΜΗΜΑΤΟΣ", 140, sigY + 20);
 
   doc.setFont("Roboto", "normal");
-  doc.text(`ΑΘΗΝΑ, ${format(data.dateRequest, "dd/MM/yyyy")}`, 140, sigY + 40);
+  const location = officeData?.city || "ΑΘΗΝΑ";
+  doc.text(`${location}, ${format(data.dateRequest, "dd/MM/yyyy")}`, 140, sigY + 40);
 
   // --- Attachments Page (if any) ---
   if (data.attachments.length > 0) {

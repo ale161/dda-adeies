@@ -39,6 +39,7 @@ const formSchema = z.object({
   leaveTypeId: z.string().min(1, "Επιλέξτε είδος άδειας"),
   applicantName: z.string().min(2, "Το ονοματεπώνυμο είναι υποχρεωτικό"),
   applicantService: z.string().min(2, "Η υπηρεσία είναι υποχρεωτική"),
+  applicantGender: z.enum(["M", "F"]),
   reason: z.string().optional(),
   dateFrom: z.date(),
   dateTo: z.date(),
@@ -57,6 +58,7 @@ export default function Home() {
     defaultValues: {
       applicantName: "",
       applicantService: "",
+      applicantGender: "M",
       reason: "",
       contactAddress: "",
       contactPostalCode: "",
@@ -66,6 +68,18 @@ export default function Home() {
   });
 
   const watchAllFields = form.watch();
+
+  // Auto-fill contact details when office changes
+  const handleOfficeChange = (officeId: string) => {
+    form.setValue("officeId", officeId);
+    const office = PROSECUTOR_OFFICES.find(o => o.id === officeId);
+    if (office) {
+      form.setValue("contactAddress", office.address);
+      form.setValue("contactPostalCode", office.postalCode);
+      form.setValue("contactPhone", office.phone);
+      form.setValue("contactEmail", office.email);
+    }
+  };
   const daysCount = watchAllFields.dateFrom && watchAllFields.dateTo 
     ? differenceInDays(watchAllFields.dateTo, watchAllFields.dateFrom) + 1 
     : 0;
@@ -121,7 +135,7 @@ export default function Home() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Εισαγγελία / Υπηρεσία</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={handleOfficeChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger className="font-mono text-sm">
                             <SelectValue placeholder="Επιλέξτε υπηρεσία..." />
@@ -153,9 +167,16 @@ export default function Home() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="max-h-[300px]">
-                          {LEAVE_TYPES.map((type) => (
+                          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">ΟΜΑΔΑ Α</div>
+                          {LEAVE_TYPES.filter(t => t.group === "A").map((type) => (
                             <SelectItem key={type.id} value={type.id}>
-                              {type.label}
+                              {type.group}.{type.groupIndex}] {type.label}
+                            </SelectItem>
+                          ))}
+                          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground mt-2">ΟΜΑΔΑ Β</div>
+                          {LEAVE_TYPES.filter(t => t.group === "B").map((type) => (
+                            <SelectItem key={type.id} value={type.id}>
+                              {type.group}.{type.groupIndex}] {type.label}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -202,6 +223,28 @@ export default function Home() {
                     )}
                   />
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="applicantGender"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Φύλο (για τίτλο αίτησης)</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="font-mono">
+                            <SelectValue placeholder="Επιλέξτε φύλο" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="M">Άντρας (Ο ΑΙΤΩΝ)</SelectItem>
+                          <SelectItem value="F">Γυναίκα (Η ΑΙΤΟΥΣΑ)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}
