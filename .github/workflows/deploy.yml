@@ -16,7 +16,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v3
         with:
-          version: 10
+          version: 9
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -24,8 +24,13 @@ jobs:
           node-version: 20
           cache: 'pnpm'
 
+      - name: Remove internal dependencies
+        # Αφαιρούμε το manus-runtime από το package.json πριν το install γιατί δεν υπάρχει στο npm
+        run: |
+          sed -i '/vite-plugin-manus-runtime/d' package.json
+
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: Build
         run: pnpm build
