@@ -1,0 +1,53 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Remove internal dependencies
+        # Αφαιρούμε το manus-runtime από το package.json πριν το install γιατί δεν υπάρχει στο npm
+        run: |
+          sed -i '/vite-plugin-manus-runtime/d' package.json
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Verify build output
+        run: |
+          echo "=== dist/public contents ==="
+          ls -la dist/public
+          echo "=== index.html head ==="
+          head -20 dist/public/index.html
+          echo "=== assets ==="
+          ls -la dist/public/assets || echo "No assets dir"
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: dist/public
+          branch: gh-pages
+          clean: true
+          single-deploy: true
