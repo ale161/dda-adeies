@@ -499,7 +499,6 @@ export default function Home() {
               <p className="font-bold mt-2">
                 {PROSECUTOR_OFFICES.find(o => o.id === watchAllFields.officeId)?.name || "..."}
               </p>
-              <p className="mt-4">XXXXXXXXXX</p>
               <div className="mt-4 text-sm">
                 <p>Ταχ. Διεύθυνση: {watchAllFields.contactAddress || "..."}</p>
                 <p>Ταχ. Κώδικας: {watchAllFields.contactPostalCode || "..."}</p>
@@ -511,6 +510,16 @@ export default function Home() {
               <p>ΗΜ/ΜΜ/ΕΤΟΣ: {format(new Date(), "dd/MM/yyyy")}</p>
               <p>Αρ. Πρωτ.</p>
             </div>
+          </div>
+
+          {/* ΠΡΟΣ */}
+          <div className="mb-8 text-right">
+            <p className="font-bold">ΠΡΟΣ:</p>
+            <p>Υπουργείο Δικαιοσύνης</p>
+            <p>Δ/νση Ανθρώπινου Δυναμικού</p>
+            <p>και Οργάνωσης</p>
+            <p>Τμήμα Διοίκησης</p>
+            <p>Ανθρώπινου Δυναμικού</p>
           </div>
 
           {/* Title */}
