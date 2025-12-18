@@ -31,8 +31,10 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { LEAVE_TYPES, PROSECUTOR_OFFICES, LeaveApplicationData } from "@/lib/data";
+import { LeaveApplicationData } from "@/lib/data";
 import { generatePDF } from "@/lib/pdf-generator";
+import { useSettings } from "@/hooks/useSettings";
+import { SettingsDialog } from "@/components/SettingsDialog";
 
 const formSchema = z.object({
   officeId: z.string().min(1, "Επιλέξτε εισαγγελία"),
@@ -50,6 +52,17 @@ const formSchema = z.object({
 });
 
 export default function Home() {
+  const {
+    leaveTypes,
+    offices,
+    addLeaveType,
+    updateLeaveType,
+    deleteLeaveType,
+    addOffice,
+    updateOffice,
+    deleteOffice,
+  } = useSettings();
+
   const [attachments, setAttachments] = useState<string[]>([]);
   const [newAttachment, setNewAttachment] = useState("");
 
@@ -72,7 +85,7 @@ export default function Home() {
   // Auto-fill contact details when office changes
   const handleOfficeChange = (officeId: string) => {
     form.setValue("officeId", officeId);
-    const office = PROSECUTOR_OFFICES.find(o => o.id === officeId);
+    const office = offices.find(o => o.id === officeId);
     if (office) {
       form.setValue("contactAddress", office.address);
       form.setValue("contactPostalCode", office.postalCode);
@@ -96,15 +109,16 @@ export default function Home() {
   };
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
+    const office = offices.find(o => o.id === values.officeId);
     const data: LeaveApplicationData = {
       ...values,
       reason: values.reason || "",
       daysCount: daysCount > 0 ? daysCount : 0,
       attachments,
-      location: "ΑΘΗΝΑ", // Default location, could be dynamic
+      location: office?.city || "ΑΘΗΝΑ",
       dateRequest: new Date(),
     };
-    generatePDF(data);
+    generatePDF(data, { leaveTypes, offices });
   };
 
   return (
@@ -112,11 +126,23 @@ export default function Home() {
       {/* Left Panel: Form Input */}
       <div className="w-full lg:w-1/2 p-6 lg:p-12 overflow-y-auto border-r border-border bg-background">
         <div className="max-w-2xl mx-auto space-y-8">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight text-primary">Αίτηση Άδειας</h1>
-            <p className="text-muted-foreground">
-              Συμπληρώστε τα στοιχεία για την έκδοση της αίτησης άδειας Δικαστικής Αστυνομίας.
-            </p>
+          <div className="flex justify-between items-start">
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold tracking-tight text-primary">Αίτηση Άδειας</h1>
+              <p className="text-muted-foreground">
+                Συμπληρώστε τα στοιχεία για την έκδοση της αίτησης άδειας Δικαστικής Αστυνομίας.
+              </p>
+            </div>
+            <SettingsDialog
+              leaveTypes={leaveTypes}
+              offices={offices}
+              onAddLeaveType={addLeaveType}
+              onUpdateLeaveType={updateLeaveType}
+              onDeleteLeaveType={deleteLeaveType}
+              onAddOffice={addOffice}
+              onUpdateOffice={updateOffice}
+              onDeleteOffice={deleteOffice}
+            />
           </div>
 
           <Form {...form}>
@@ -142,7 +168,7 @@ export default function Home() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {PROSECUTOR_OFFICES.map((office) => (
+                          {offices.map((office) => (
                             <SelectItem key={office.id} value={office.id}>
                               {office.name}
                             </SelectItem>
@@ -168,13 +194,13 @@ export default function Home() {
                         </FormControl>
                         <SelectContent className="max-h-[300px]">
                           <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">ΟΜΑΔΑ Α</div>
-                          {LEAVE_TYPES.filter(t => t.group === "A").map((type) => (
+                          {leaveTypes.filter(t => t.group === "A").sort((a,b) => a.groupIndex - b.groupIndex).map((type) => (
                             <SelectItem key={type.id} value={type.id}>
                               {type.group}.{type.groupIndex}] {type.label}
                             </SelectItem>
                           ))}
                           <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground mt-2">ΟΜΑΔΑ Β</div>
-                          {LEAVE_TYPES.filter(t => t.group === "B").map((type) => (
+                          {leaveTypes.filter(t => t.group === "B").sort((a,b) => a.groupIndex - b.groupIndex).map((type) => (
                             <SelectItem key={type.id} value={type.id}>
                               {type.group}.{type.groupIndex}] {type.label}
                             </SelectItem>
@@ -497,9 +523,14 @@ export default function Home() {
               <p>ΔΙΚΑΣΤΙΚΗΣ ΑΣΤΥΝΟΜΙΑΣ</p>
               <p>ΠΟΛΙΤΙΚΟΣ ΤΟΜΕΑΣ</p>
               <p className="font-bold mt-2">
-                {PROSECUTOR_OFFICES.find(o => o.id === watchAllFields.officeId)?.name || "..."}
+                {offices.find(o => o.id === watchAllFields.officeId)?.name || "..."}
               </p>
-              <p className="mt-4">XXXXXXXXXX</p>
+              <div className="mt-4">
+                <p className="font-bold">ΠΡΟΣ:</p>
+                <p>Υπουργείο Δικαιοσύνης</p>
+                <p>Δ/νση Ανθρώπινου Δυναμικού και Οργάνωσης</p>
+                <p>Τμήμα Διοίκησης Ανθρώπινου Δυναμικού</p>
+              </div>
               <div className="mt-4 text-sm">
                 <p>Ταχ. Διεύθυνση: {watchAllFields.contactAddress || "..."}</p>
                 <p>Ταχ. Κώδικας: {watchAllFields.contactPostalCode || "..."}</p>
@@ -537,9 +568,9 @@ export default function Home() {
             <div className="grid grid-cols-[200px_1fr] gap-4">
               <div className="font-bold">ΕΙΔΟΣ ΑΔΕΙΑΣ:</div>
               <div className="font-mono border-b border-dotted border-black/30 pb-1">
-                {LEAVE_TYPES.find(l => l.id === watchAllFields.leaveTypeId)?.label || "..."}
+                {leaveTypes.find(l => l.id === watchAllFields.leaveTypeId)?.label || "..."}
                 <span className="block text-xs text-muted-foreground mt-1">
-                  {LEAVE_TYPES.find(l => l.id === watchAllFields.leaveTypeId)?.code}
+                  {leaveTypes.find(l => l.id === watchAllFields.leaveTypeId)?.code}
                 </span>
               </div>
             </div>
@@ -564,10 +595,18 @@ export default function Home() {
           <div className="mt-24 grid grid-cols-2 gap-12">
             <div className="space-y-12">
               <div>
-                <p className="font-bold">Ο/Η ΑΙΤ</p>
+                <p className="font-bold">{watchAllFields.applicantGender === "F" ? "Η ΑΙΤΟΥΣΑ" : "Ο ΑΙΤΩΝ"}</p>
               </div>
               <div>
-                <p className="font-bold">Ο/Η Κ. ΕΙΣΑΓΓΕΛΕΑΣ/Κ. ΠΡΟΕΔΡΟΣ</p>
+                <p className="font-bold">
+                  {(() => {
+                    const office = offices.find(o => o.id === watchAllFields.officeId);
+                    if (!office) return "Ο/Η Κ. ΕΙΣΑΓΓΕΛΕΑΣ/Κ. ΠΡΟΕΔΡΟΣ";
+                    const title = office.hasProsecutor ? "ΕΙΣΑΓΓΕΛΕΑΣ" : "ΠΡΟΕΔΡΟΣ";
+                    const prefix = office.headGender === "F" ? "Η Κ." : "Ο Κ.";
+                    return `${prefix} ${title}`;
+                  })()}
+                </p>
               </div>
             </div>
             <div className="space-y-12">
@@ -579,7 +618,7 @@ export default function Home() {
                 <p>ΤΟΥ ΤΜΗΜΑΤΟΣ</p>
               </div>
               <div className="pt-8">
-                <p>ΑΘΗΝΑ, {format(new Date(), "dd/MM/yyyy")}</p>
+                <p>{offices.find(o => o.id === watchAllFields.officeId)?.city || "ΑΘΗΝΑ"}, {format(new Date(), "dd/MM/yyyy")}</p>
               </div>
             </div>
           </div>

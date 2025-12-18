@@ -1,7 +1,7 @@
 import { jsPDF } from "jspdf";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
-import { LeaveApplicationData, LEAVE_TYPES, PROSECUTOR_OFFICES } from "./data";
+import { LeaveApplicationData, LeaveType, ProsecutorOffice } from "./data";
 import { fontBase64 } from "./fonts/Roboto-Regular-normal"; // We will need to create this
 import { fontBoldBase64 } from "./fonts/Roboto-Bold-bold"; // We will need to create this
 
@@ -25,7 +25,10 @@ const loadFonts = (doc: jsPDF) => {
   }
 };
 
-export const generatePDF = (data: LeaveApplicationData) => {
+export const generatePDF = (
+  data: LeaveApplicationData,
+  settings: { leaveTypes: LeaveType[]; offices: ProsecutorOffice[] }
+) => {
   const doc = new jsPDF();
   
   // Load Fonts (We need to ensure we have a Greek-supporting font)
@@ -35,9 +38,9 @@ export const generatePDF = (data: LeaveApplicationData) => {
   
   loadFonts(doc);
 
-  const officeData = PROSECUTOR_OFFICES.find(o => o.id === data.officeId);
+  const officeData = settings.offices.find(o => o.id === data.officeId);
   const officeName = officeData?.name || "";
-  const leaveType = LEAVE_TYPES.find(l => l.id === data.leaveTypeId);
+  const leaveType = settings.leaveTypes.find(l => l.id === data.leaveTypeId);
   const leaveTypeName = leaveType ? `${leaveType.group}.${leaveType.groupIndex}] ${leaveType.label}` : "";
   const leaveTypeCode = leaveType?.code || "";
 
