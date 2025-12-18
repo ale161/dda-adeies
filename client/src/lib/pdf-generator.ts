@@ -7,6 +7,10 @@ import { fontBoldBase64 } from "./fonts/Roboto-Bold-bold"; // We will need to cr
 
 // Helper to load fonts if not already loaded
 const loadFonts = (doc: jsPDF) => {
+  console.log("Regular font preview:", fontBase64.substring(0, 100));
+  console.log("Regular font length:", fontBase64.length);
+  console.log("Bold font preview:", fontBoldBase64.substring(0, 100));
+  console.log("Bold font length:", fontBoldBase64.length);
   // Check if font is already added to avoid duplicates/errors
   if (doc.getFontList().Roboto) {
     return;
