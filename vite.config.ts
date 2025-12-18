@@ -9,7 +9,11 @@ import { VitePWA } from "vite-plugin-pwa";
 // Conditional import for manus-runtime
 let manus;
 try {
-  manus = (await import("vite-plugin-manus-runtime")).default;
+  const mod = await import("vite-plugin-manus-runtime");
+  manus = mod.manus || mod.default;
+  if (typeof manus !== "function") {
+    throw new Error("manus is not a function");
+  }
 } catch (e) {
   // Plugin not available (e.g. in GitHub Actions), use a no-op plugin
   manus = () => ({ name: "manus-runtime-noop" });
