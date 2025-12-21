@@ -63,8 +63,8 @@ export const generatePDF = (
   
 
   doc.setFontSize(10);
-  doc.text(`ΗΜ/ΜΜ/ΕΤΟΣ: ${format(data.dateRequest, "dd/MM/yyyy")}`, 150, 20);
-  doc.text("Αρ. Πρωτ.", 150, 25);
+  doc.text(`Ημερομηνία: ${format(data.dateRequest, "dd/MM/yyyy")}`, 150, 20);
+  doc.text("Αρ. Πρωτ.: _______", 150, 25);
 
   // --- ΠΡΟΣ ---
   doc.setFont("Roboto", "bold");

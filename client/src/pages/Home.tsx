@@ -155,7 +155,12 @@ export default function Home() {
                         <SelectContent>
                           {offices.map((office) => (
                             <SelectItem key={office.id} value={office.id}>
-                              {office.name}
+                              <div className="flex flex-col">
+                                <span className="font-bold">{office.name}</span>
+                                <span className="text-xs opacity-70">
+                                  {office.address}, {office.postalCode} | Τηλ: {office.phone} | Email: {office.email}
+                                </span>
+                              </div>
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -456,8 +461,8 @@ export default function Home() {
               </div>
             </div>
             <div className="text-right">
-              <p>ΗΜ/ΜΜ/ΕΤΟΣ: {format(new Date(), "dd/MM/yyyy")}</p>
-              <p>Αρ. Πρωτ.</p>
+              <p>Ημερομηνία: {format(new Date(), "dd/MM/yyyy")}</p>
+              <p>Αρ. Πρωτ.: _______</p>
             </div>
           </div>
 
