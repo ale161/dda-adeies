@@ -24,7 +24,6 @@ export type LeaveApplicationData = {
   officeId: string;
   leaveTypeId: string;
   applicantName: string;
-  applicantService: string;
   applicantGender: "M" | "F";
   reason: string;
   dateFrom: Date | undefined;

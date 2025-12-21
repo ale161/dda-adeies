@@ -40,7 +40,6 @@ const formSchema = z.object({
   officeId: z.string().min(1, "Επιλέξτε εισαγγελία"),
   leaveTypeId: z.string().min(1, "Επιλέξτε είδος άδειας"),
   applicantName: z.string().min(2, "Το ονοματεπώνυμο είναι υποχρεωτικό"),
-  applicantService: z.string().min(2, "Η υπηρεσία είναι υποχρεωτική"),
   applicantGender: z.enum(["M", "F"]),
   reason: z.string().optional(),
   dateFrom: z.date(),
@@ -66,7 +65,6 @@ export default function Home() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       applicantName: "",
-      applicantService: "",
       applicantGender: "M",
       reason: "",
     },
@@ -210,35 +208,19 @@ export default function Home() {
                   Προσωπικά Στοιχεία
                 </h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="applicantName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Ονοματεπώνυμο</FormLabel>
-                        <FormControl>
-                          <Input placeholder="π.χ. ΓΕΩΡΓΙΟΣ ΠΑΠΑΔΟΠΟΥΛΟΣ" className="font-mono" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="applicantService"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Υπηρεσία Υπηρέτησης</FormLabel>
-                        <FormControl>
-                          <Input placeholder="π.χ. ΤΜΗΜΑ ΔΙΟΙΚΗΤΙΚΟΥ" className="font-mono" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="applicantName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Ονοματεπώνυμο</FormLabel>
+                      <FormControl>
+                        <Input placeholder="π.χ. ΓΕΩΡΓΙΟΣ ΠΑΠΑΔΟΠΟΥΛΟΣ" className="font-mono" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}
@@ -489,13 +471,6 @@ export default function Home() {
               <div className="font-bold">ΟΝΟΜΑΤΕΠΩΝΥΜΟ ΥΠΑΛΛΗΛΟΥ:</div>
               <div className="font-mono border-b border-dotted border-black/30 pb-1">
                 {watchAllFields.applicantName || "..."}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-[200px_1fr] gap-4">
-              <div className="font-bold">ΥΠΗΡΕΣΙΑ ΣΤΗΝ ΟΠΟΙΑ ΥΠΗΡΕΤΕΙ:</div>
-              <div className="font-mono border-b border-dotted border-black/30 pb-1">
-                {watchAllFields.applicantService || "..."}
               </div>
             </div>
 

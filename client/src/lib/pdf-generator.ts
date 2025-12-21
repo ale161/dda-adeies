@@ -101,13 +101,6 @@ export const generatePDF = (
   doc.text(data.applicantName, rightCol, y);
   y += lineHeight;
 
-  // Service
-  doc.setFont("Roboto", "bold");
-  doc.text("ΥΠΗΡΕΣΙΑ ΣΤΗΝ ΟΠΟΙΑ ΥΠΗΡΕΤΕΙ:", leftCol, y);
-  doc.setFont("Roboto", "normal");
-  doc.text(data.applicantService, rightCol, y);
-  y += lineHeight;
-
   // Leave Type
   doc.setFont("Roboto", "bold");
   doc.text("ΕΙΔΟΣ ΑΔΕΙΑΣ:", leftCol, y);
