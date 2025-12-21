@@ -450,9 +450,21 @@ export default function Home() {
               <p>ΠΕΡΙΦΕΡΕΙΑΚΗ ΥΠΗΡΕΣΙΑ</p>
               <p>ΔΙΚΑΣΤΙΚΗΣ ΑΣΤΥΝΟΜΙΑΣ</p>
               <p>ΠΟΛΙΤΙΚΟΣ ΤΟΜΕΑΣ</p>
-              <p className="font-bold mt-2">
-                {offices.find(o => o.id === watchAllFields.officeId)?.name || "..."}
-              </p>
+              <div className="mt-2">
+                <p className="font-bold">
+                  {offices.find(o => o.id === watchAllFields.officeId)?.name || "..."}
+                </p>
+                {(() => {
+                  const office = offices.find(o => o.id === watchAllFields.officeId);
+                  if (!office) return null;
+                  return (
+                    <div className="text-[8pt] leading-tight mt-1 opacity-80">
+                      <p>{office.address}, {office.postalCode}</p>
+                      <p>Τηλ: {office.phone} | Email: {office.email}</p>
+                    </div>
+                  );
+                })()}
+              </div>
               <div className="mt-4">
                 <p className="font-bold">ΠΡΟΣ:</p>
                 <p>Υπουργείο Δικαιοσύνης</p>

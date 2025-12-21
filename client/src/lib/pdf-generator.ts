@@ -54,8 +54,11 @@ export const generatePDF = (
   doc.text("ΔΙΚΑΣΤΙΚΗΣ ΑΣΤΥΝΟΜΙΑΣ", 20, 40);
   doc.text("ΠΟΛΙΤΙΚΟΣ ΤΟΜΕΑΣ", 20, 45);
   
-  // Split office name if too long
-  const splitOffice = doc.splitTextToSize(officeName, 80);
+  // Split office name and address details if too long
+  const officeDetails = officeData ? 
+    `${officeData.name}\n${officeData.address}, ${officeData.postalCode}\nΤηλ: ${officeData.phone} | Email: ${officeData.email}` : 
+    officeName;
+  const splitOffice = doc.splitTextToSize(officeDetails, 80);
   doc.text(splitOffice, 20, 50);
 
   doc.setFont("Roboto", "normal");
