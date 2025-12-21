@@ -45,10 +45,6 @@ const formSchema = z.object({
   reason: z.string().optional(),
   dateFrom: z.date(),
   dateTo: z.date(),
-  contactAddress: z.string().min(2, "Η διεύθυνση είναι υποχρεωτική"),
-  contactPostalCode: z.string().min(2, "Ο Τ.Κ. είναι υποχρεωτικός"),
-  contactPhone: z.string().min(10, "Το τηλέφωνο είναι υποχρεωτικό"),
-  contactEmail: z.string().email("Μη έγκυρο email"),
 });
 
 export default function Home() {
@@ -73,10 +69,6 @@ export default function Home() {
       applicantService: "",
       applicantGender: "M",
       reason: "",
-      contactAddress: "",
-      contactPostalCode: "",
-      contactPhone: "",
-      contactEmail: "",
     },
   });
 
@@ -85,13 +77,6 @@ export default function Home() {
   // Auto-fill contact details when office changes
   const handleOfficeChange = (officeId: string) => {
     form.setValue("officeId", officeId);
-    const office = offices.find(o => o.id === officeId);
-    if (office) {
-      form.setValue("contactAddress", office.address);
-      form.setValue("contactPostalCode", office.postalCode);
-      form.setValue("contactPhone", office.phone);
-      form.setValue("contactEmail", office.email);
-    }
   };
   const daysCount = watchAllFields.dateFrom && watchAllFields.dateTo 
     ? differenceInDays(watchAllFields.dateTo, watchAllFields.dateFrom) + 1 
@@ -388,68 +373,6 @@ export default function Home() {
                 )}
               </div>
 
-              {/* Section 4: Στοιχεία Επικοινωνίας */}
-              <div className="space-y-4 border-l-4 border-primary pl-4 py-1">
-                <h2 className="text-lg font-semibold flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-primary" />
-                  Στοιχεία Επικοινωνίας
-                </h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="contactAddress"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Διεύθυνση</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Οδός & Αριθμός" className="font-mono" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="contactPostalCode"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Τ.Κ.</FormLabel>
-                        <FormControl>
-                          <Input placeholder="12345" className="font-mono" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="contactPhone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Τηλέφωνο</FormLabel>
-                        <FormControl>
-                          <Input placeholder="69XXXXXXXX" className="font-mono" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="contactEmail"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input placeholder="email@example.com" className="font-mono" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
 
               {/* Section 5: Συνημμένα */}
               <div className="space-y-4 border-l-4 border-primary pl-4 py-1">
@@ -530,12 +453,6 @@ export default function Home() {
                 <p>Υπουργείο Δικαιοσύνης</p>
                 <p>Δ/νση Ανθρώπινου Δυναμικού και Οργάνωσης</p>
                 <p>Τμήμα Διοίκησης Ανθρώπινου Δυναμικού</p>
-              </div>
-              <div className="mt-4 text-sm">
-                <p>Ταχ. Διεύθυνση: {watchAllFields.contactAddress || "..."}</p>
-                <p>Ταχ. Κώδικας: {watchAllFields.contactPostalCode || "..."}</p>
-                <p>Τηλέφωνο: {watchAllFields.contactPhone || "..."}</p>
-                <p>Email: {watchAllFields.contactEmail || "..."}</p>
               </div>
             </div>
             <div className="text-right">

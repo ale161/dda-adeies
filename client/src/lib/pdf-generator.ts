@@ -61,10 +61,6 @@ export const generatePDF = (
   doc.setFont("Roboto", "normal");
   doc.setFontSize(9);
   
-  doc.text(`Ταχ. Διεύθυνση: ${data.contactAddress}`, 20, 65);
-  doc.text(`Ταχ. Κώδικας: ${data.contactPostalCode}`, 20, 70);
-  doc.text(`Τηλέφωνο: ${data.contactPhone}`, 20, 75);
-  doc.text(`Email: ${data.contactEmail}`, 20, 80);
 
   doc.setFontSize(10);
   doc.text(`ΗΜ/ΜΜ/ΕΤΟΣ: ${format(data.dateRequest, "dd/MM/yyyy")}`, 150, 20);

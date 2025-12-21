@@ -30,10 +30,6 @@ export type LeaveApplicationData = {
   dateFrom: Date | undefined;
   dateTo: Date | undefined;
   daysCount: number;
-  contactAddress: string;
-  contactPostalCode: string;
-  contactPhone: string;
-  contactEmail: string;
   attachments: string[];
   location: string;
   dateRequest: Date;
