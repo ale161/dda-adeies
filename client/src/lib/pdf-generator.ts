@@ -133,15 +133,16 @@ export const generatePDF = (
   const sigY = 240;
   
   doc.setFont("Roboto", "bold");
-  const applicantTitle = data.applicantGender === "M" ? "Ο ΑΙΤΩΝ" : "Η ΑΙΤΟΥΣΑ";
-  doc.text(applicantTitle, 30, sigY);
-  doc.text("ΣΥΜΦΩΝΩ", 100, sigY);
+  doc.text("ΣΥΜΦΩΝΩ", 30, sigY);
   
   const headTitle = officeData?.hasProsecutor 
     ? (officeData.headGender === "M" ? "Ο Κ. ΕΙΣΑΓΓΕΛΕΑΣ" : "Η Κ. ΕΙΣΑΓΓΕΛΕΑΣ")
     : (officeData?.headGender === "M" ? "Ο Κ. ΠΡΟΕΔΡΟΣ" : "Η Κ. ΠΡΟΕΔΡΟΣ");
     
   doc.text(headTitle, 30, sigY + 15);
+  
+  const applicantTitle = data.applicantGender === "M" ? "Ο ΑΙΤΩΝ" : "Η ΑΙΤΟΥΣΑ";
+  doc.text(applicantTitle, 140, sigY);
   doc.text("Ο/Η ΠΡΟΪΣΤΑΜ.........", 140, sigY + 15);
   doc.text("ΤΟΥ ΤΜΗΜΑΤΟΣ", 140, sigY + 20);
 

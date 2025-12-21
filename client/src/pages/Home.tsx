@@ -504,7 +504,7 @@ export default function Home() {
           <div className="mt-24 grid grid-cols-2 gap-12">
             <div className="space-y-12">
               <div>
-                <p className="font-bold">{watchAllFields.applicantGender === "F" ? "Η ΑΙΤΟΥΣΑ" : "Ο ΑΙΤΩΝ"}</p>
+                <p className="font-bold">ΣΥΜΦΩΝΩ</p>
               </div>
               <div>
                 <p className="font-bold">
@@ -520,7 +520,7 @@ export default function Home() {
             </div>
             <div className="space-y-12">
               <div>
-                <p className="font-bold">ΣΥΜΦΩΝΩ</p>
+                <p className="font-bold">{watchAllFields.applicantGender === "F" ? "Η ΑΙΤΟΥΣΑ" : "Ο ΑΙΤΩΝ"}</p>
               </div>
               <div>
                 <p className="font-bold">Ο/Η ΠΡΟΪΣΤΑΜ.........</p>
