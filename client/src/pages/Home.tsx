@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -50,12 +51,19 @@ export default function Home() {
   const {
     leaveTypes,
     offices,
+    holidays,
+    includeHolidaysInCalculation,
     addLeaveType,
     updateLeaveType,
     deleteLeaveType,
     addOffice,
     updateOffice,
     deleteOffice,
+    addHoliday,
+    updateHoliday,
+    deleteHoliday,
+    importHolidaysFromAPI,
+    setIncludeHolidaysInCalculation,
   } = useSettings();
 
   const [attachments, setAttachments] = useState<string[]>([]);
@@ -80,6 +88,43 @@ export default function Home() {
     ? differenceInDays(watchAllFields.dateTo, watchAllFields.dateFrom) + 1 
     : 0;
 
+  // Calculate working days (excluding holidays if option is enabled)
+  const calculateWorkingDays = () => {
+    if (!watchAllFields.dateFrom || !watchAllFields.dateTo || !includeHolidaysInCalculation) {
+      return daysCount;
+    }
+
+    let workingDays = 0;
+    const current = new Date(watchAllFields.dateFrom);
+    
+    while (current <= watchAllFields.dateTo) {
+      // Check if current day is a holiday
+      const dateString = current.toISOString().split('T')[0]; // YYYY-MM-DD format
+      const monthDay = current.toISOString().slice(5, 10); // MM-DD format
+      
+      const isHoliday = holidays.some(holiday => {
+        if (holiday.isFixed) {
+          // For fixed holidays, check if month-day matches
+          return holiday.date === monthDay;
+        } else {
+          // For specific dates, check full date
+          return holiday.date === dateString;
+        }
+      });
+      
+      if (!isHoliday) {
+        workingDays++;
+      }
+      
+      // Move to next day
+      current.setDate(current.getDate() + 1);
+    }
+    
+    return workingDays;
+  };
+
+  const finalDaysCount = calculateWorkingDays();
+
   const addAttachment = () => {
     if (newAttachment.trim()) {
       setAttachments([...attachments, newAttachment.trim()]);
@@ -96,7 +141,7 @@ export default function Home() {
     const data: LeaveApplicationData = {
       ...values,
       reason: values.reason || "",
-      daysCount: daysCount > 0 ? daysCount : 0,
+      daysCount: finalDaysCount > 0 ? finalDaysCount : 0,
       attachments,
       location: office?.city || "ΑΘΗΝΑ",
       dateRequest: new Date(),
@@ -119,12 +164,17 @@ export default function Home() {
             <SettingsDialog
               leaveTypes={leaveTypes}
               offices={offices}
+              holidays={holidays}
               onAddLeaveType={addLeaveType}
               onUpdateLeaveType={updateLeaveType}
               onDeleteLeaveType={deleteLeaveType}
               onAddOffice={addOffice}
               onUpdateOffice={updateOffice}
               onDeleteOffice={deleteOffice}
+              onAddHoliday={addHoliday}
+              onUpdateHoliday={updateHoliday}
+              onDeleteHoliday={deleteHoliday}
+              onImportHolidaysFromAPI={importHolidaysFromAPI}
             />
           </div>
 
@@ -354,8 +404,28 @@ export default function Home() {
                 </div>
                 
                 {daysCount > 0 && (
-                  <div className="text-sm font-medium text-primary bg-primary/10 p-2 rounded inline-block">
-                    Σύνολο ημερών: {daysCount}
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="include-holidays" 
+                        checked={includeHolidaysInCalculation}
+                        onCheckedChange={(checked) => setIncludeHolidaysInCalculation(checked as boolean)}
+                      />
+                      <label 
+                        htmlFor="include-holidays" 
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Συμπερίληψη αργιών στον υπολογισμό
+                      </label>
+                    </div>
+                    <div className="text-sm font-medium text-primary bg-primary/10 p-2 rounded inline-block">
+                      Σύνολο ημερών: {finalDaysCount}
+                      {includeHolidaysInCalculation && finalDaysCount !== daysCount && (
+                        <span className="text-xs text-muted-foreground ml-2">
+                          (χωρίς αργίες: {daysCount})
+                        </span>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -495,7 +565,7 @@ export default function Home() {
               <div className="font-bold">ΔΙΑΡΚΕΙΑ:</div>
               <div className="font-mono border-b border-dotted border-black/30 pb-1">
                 ΑΠΟ {watchAllFields.dateFrom ? format(watchAllFields.dateFrom, "dd/MM/yyyy") : "..."} ΕΩΣ {watchAllFields.dateTo ? format(watchAllFields.dateTo, "dd/MM/yyyy") : "..."}
-                {daysCount > 0 && <span className="ml-4">(Σύνολο ημερών: {daysCount})</span>}
+                {daysCount > 0 && <span className="ml-4">(Σύνολο ημερών: {finalDaysCount})</span>}
               </div>
             </div>
           </div>

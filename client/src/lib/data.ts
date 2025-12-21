@@ -20,6 +20,14 @@ export type ProsecutorOffice = {
   headGender: "M" | "F"; // M = Κ. ΕΙΣΑΓΓΕΛΕΑΣ/ΠΡΟΕΔΡΟΣ, F = Κ. ΕΙΣΑΓΓΕΛΕΑΣ/ΠΡΟΕΔΡΟΣ (generic title usually, but allows customization if needed)
 };
 
+export type Holiday = {
+  id: string;
+  date: string; // ISO date string (YYYY-MM-DD)
+  name: string;
+  description?: string;
+  isFixed: boolean; // true for fixed dates like Christmas, false for specific dates
+};
+
 export type LeaveApplicationData = {
   officeId: string;
   leaveTypeId: string;
@@ -281,4 +289,16 @@ export const LEAVE_TYPES: LeaveType[] = [
   { id: "B8", label: "Διευκολύνσεις οικογενειακών υποχρεώσεων", code: "αρ. 53 του ν. 3528/2007", group: "B", groupIndex: 8 },
   { id: "B9", label: "Αναρρωτική πέραν των 8 ημερών", code: "αρ. 56 παρ. 3 του ν. 3528/2007", group: "B", groupIndex: 9 },
   { id: "B10", label: "Υπηρεσιακή εκπαίδευση", code: "αρ. 58 του ν. 3528/2007", group: "B", groupIndex: 10 },
+];
+
+export const HOLIDAYS: Holiday[] = [
+  // Fixed holidays
+  { id: "h1", date: "01-01", name: "Πρωτοχρονιά", description: "Νέο Έτος", isFixed: true },
+  { id: "h2", date: "01-06", name: "Θεοφάνεια", description: "Φώτα", isFixed: true },
+  { id: "h3", date: "03-25", name: "Εθνική Εορτή", description: "Ευαγγελισμός & Επανάσταση 1821", isFixed: true },
+  { id: "h4", date: "05-01", name: "Εργατική Πρωτομαγιά", description: "Διεθνής Ημέρα Εργασίας", isFixed: true },
+  { id: "h5", date: "08-15", name: "Κοίμηση Θεοτόκου", description: "Δεκαπενταύγουστος", isFixed: true },
+  { id: "h6", date: "10-28", name: "Εθνική Εορτή", description: "ΟΧΙ", isFixed: true },
+  { id: "h7", date: "12-25", name: "Χριστούγεννα", description: "", isFixed: true },
+  { id: "h8", date: "12-26", name: "Σύναξη Θεοτόκου", description: "", isFixed: true },
 ];
