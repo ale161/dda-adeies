@@ -52,7 +52,7 @@ export default function Home() {
     leaveTypes,
     offices,
     holidays,
-    includeHolidaysInCalculation,
+    excludeHolidaysAndWeekends,
     addLeaveType,
     updateLeaveType,
     deleteLeaveType,
@@ -63,7 +63,7 @@ export default function Home() {
     updateHoliday,
     deleteHoliday,
     importHolidaysFromAPI,
-    setIncludeHolidaysInCalculation,
+    setExcludeHolidaysAndWeekends,
   } = useSettings();
 
   const [attachments, setAttachments] = useState<string[]>([]);
@@ -88,9 +88,9 @@ export default function Home() {
     ? differenceInDays(watchAllFields.dateTo, watchAllFields.dateFrom) + 1 
     : 0;
 
-  // Calculate working days (excluding holidays if option is enabled)
+  // Calculate working days (excluding holidays and weekends if option is enabled)
   const calculateWorkingDays = () => {
-    if (!watchAllFields.dateFrom || !watchAllFields.dateTo || !includeHolidaysInCalculation) {
+    if (!watchAllFields.dateFrom || !watchAllFields.dateTo || !excludeHolidaysAndWeekends) {
       return daysCount;
     }
 
@@ -98,6 +98,9 @@ export default function Home() {
     const current = new Date(watchAllFields.dateFrom);
     
     while (current <= watchAllFields.dateTo) {
+      // Check if current day is a weekend (Saturday = 6, Sunday = 0)
+      const isWeekend = current.getDay() === 0 || current.getDay() === 6;
+      
       // Check if current day is a holiday
       const dateString = current.toISOString().split('T')[0]; // YYYY-MM-DD format
       const monthDay = current.toISOString().slice(5, 10); // MM-DD format
@@ -112,7 +115,8 @@ export default function Home() {
         }
       });
       
-      if (!isHoliday) {
+      // Count the day if it's not a weekend and not a holiday
+      if (!isWeekend && !isHoliday) {
         workingDays++;
       }
       
@@ -407,22 +411,22 @@ export default function Home() {
                   <div className="space-y-2">
                     <div className="flex items-center space-x-2">
                       <Checkbox 
-                        id="include-holidays" 
-                        checked={includeHolidaysInCalculation}
-                        onCheckedChange={(checked) => setIncludeHolidaysInCalculation(checked as boolean)}
+                        id="exclude-holidays-weekends" 
+                        checked={excludeHolidaysAndWeekends}
+                        onCheckedChange={(checked) => setExcludeHolidaysAndWeekends(checked as boolean)}
                       />
                       <label 
-                        htmlFor="include-holidays" 
+                        htmlFor="exclude-holidays-weekends" 
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                       >
-                        Συμπερίληψη αργιών στον υπολογισμό
+                        Εξαίρεση αργιών και Σαββατοκύριακων
                       </label>
                     </div>
                     <div className="text-sm font-medium text-primary bg-primary/10 p-2 rounded inline-block">
                       Σύνολο ημερών: {finalDaysCount}
-                      {includeHolidaysInCalculation && finalDaysCount !== daysCount && (
+                      {excludeHolidaysAndWeekends && finalDaysCount !== daysCount && (
                         <span className="text-xs text-muted-foreground ml-2">
-                          (χωρίς αργίες: {daysCount})
+                          (σύνολο με αργίες και σαββατοκύριακα: {daysCount})
                         </span>
                       )}
                     </div>

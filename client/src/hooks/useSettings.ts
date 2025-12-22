@@ -4,7 +4,7 @@ import { LeaveType, ProsecutorOffice, Holiday, LEAVE_TYPES, PROSECUTOR_OFFICES, 
 const STORAGE_KEY_LEAVE_TYPES = "dda_leave_types";
 const STORAGE_KEY_OFFICES = "dda_offices";
 const STORAGE_KEY_HOLIDAYS = "dda_holidays";
-const STORAGE_KEY_INCLUDE_HOLIDAYS = "dda_include_holidays";
+const STORAGE_KEY_EXCLUDE_HOLIDAYS_AND_WEEKENDS = "dda_exclude_holidays_and_weekends";
 
 export function useSettings() {
   const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>(() => {
@@ -22,8 +22,8 @@ export function useSettings() {
     return saved ? JSON.parse(saved) : HOLIDAYS;
   });
 
-  const [includeHolidaysInCalculation, setIncludeHolidaysInCalculation] = useState<boolean>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY_INCLUDE_HOLIDAYS);
+  const [excludeHolidaysAndWeekends, setExcludeHolidaysAndWeekends] = useState<boolean>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY_EXCLUDE_HOLIDAYS_AND_WEEKENDS);
     return saved ? JSON.parse(saved) : false;
   });
 
@@ -40,8 +40,8 @@ export function useSettings() {
   }, [holidays]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY_INCLUDE_HOLIDAYS, JSON.stringify(includeHolidaysInCalculation));
-  }, [includeHolidaysInCalculation]);
+    localStorage.setItem(STORAGE_KEY_EXCLUDE_HOLIDAYS_AND_WEEKENDS, JSON.stringify(excludeHolidaysAndWeekends));
+  }, [excludeHolidaysAndWeekends]);
 
   const addLeaveType = (type: LeaveType) => {
     setLeaveTypes((prev) => [...prev, type]);
@@ -184,7 +184,7 @@ export function useSettings() {
     leaveTypes,
     offices,
     holidays,
-    includeHolidaysInCalculation,
+    excludeHolidaysAndWeekends,
     addLeaveType,
     updateLeaveType,
     deleteLeaveType,
@@ -195,6 +195,6 @@ export function useSettings() {
     updateHoliday,
     deleteHoliday,
     importHolidaysFromAPI,
-    setIncludeHolidaysInCalculation,
+    setExcludeHolidaysAndWeekends,
   };
 }
