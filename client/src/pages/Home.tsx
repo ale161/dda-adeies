@@ -84,13 +84,44 @@ export default function Home() {
   const handleOfficeChange = (officeId: string) => {
     form.setValue("officeId", officeId);
   };
+
+  // Auto-populate required documents when leave type changes
+  const handleLeaveTypeChange = (leaveTypeId: string) => {
+    form.setValue("leaveTypeId", leaveTypeId);
+    
+    // Find the selected leave type
+    const selectedLeaveType = leaveTypes.find(lt => lt.id === leaveTypeId);
+    if (selectedLeaveType && selectedLeaveType.requiredDocuments.length > 0) {
+      // Add required documents that aren't already in attachments
+      const currentAttachments = [...attachments];
+      const documentsToAdd = selectedLeaveType.requiredDocuments.filter(
+        doc => !currentAttachments.some(existingDoc => existingDoc.toLowerCase() === doc.toLowerCase())
+      );
+      
+      if (documentsToAdd.length > 0) {
+        setAttachments([...currentAttachments, ...documentsToAdd]);
+      }
+    }
+  };
   const daysCount = watchAllFields.dateFrom && watchAllFields.dateTo 
     ? differenceInDays(watchAllFields.dateTo, watchAllFields.dateFrom) + 1 
     : 0;
 
   // Calculate working days (excluding holidays and weekends if option is enabled)
   const calculateWorkingDays = () => {
-    if (!watchAllFields.dateFrom || !watchAllFields.dateTo || !excludeHolidaysAndWeekends) {
+    if (!watchAllFields.dateFrom || !watchAllFields.dateTo) {
+      return daysCount;
+    }
+
+    // Get the selected leave type to check for override setting
+    const selectedLeaveType = leaveTypes.find(lt => lt.id === watchAllFields.leaveTypeId);
+    
+    // Use leave-type specific setting if available, otherwise use global setting
+    const shouldExclude = selectedLeaveType?.excludeHolidaysAndWeekends !== undefined 
+      ? selectedLeaveType.excludeHolidaysAndWeekends 
+      : excludeHolidaysAndWeekends;
+    
+    if (!shouldExclude) {
       return daysCount;
     }
 
@@ -228,7 +259,7 @@ export default function Home() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Είδος Άδειας</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={handleLeaveTypeChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger className="font-mono text-sm">
                             <SelectValue placeholder="Επιλέξτε είδος άδειας..." />
@@ -239,12 +270,18 @@ export default function Home() {
                           {leaveTypes.filter(t => t.group === "A").sort((a,b) => a.groupIndex - b.groupIndex).map((type) => (
                             <SelectItem key={type.id} value={type.id}>
                               {type.group}.{type.groupIndex}] {type.label}
+                              {type.requiredDocuments.length > 0 && (
+                                <span className="text-xs text-blue-600 ml-2">({type.requiredDocuments.length} έγγραφα)</span>
+                              )}
                             </SelectItem>
                           ))}
                           <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground mt-2">ΟΜΑΔΑ Β</div>
                           {leaveTypes.filter(t => t.group === "B").sort((a,b) => a.groupIndex - b.groupIndex).map((type) => (
                             <SelectItem key={type.id} value={type.id}>
                               {type.group}.{type.groupIndex}] {type.label}
+                              {type.requiredDocuments.length > 0 && (
+                                <span className="text-xs text-blue-600 ml-2">({type.requiredDocuments.length} έγγραφα)</span>
+                              )}
                             </SelectItem>
                           ))}
                         </SelectContent>

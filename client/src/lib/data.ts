@@ -6,6 +6,8 @@ export type LeaveType = {
   code: string; // e.g., "αρ. 50 παρ. 9 του ν. 3528/2007"
   group: LeaveGroup;
   groupIndex: number; // e.g., 1 for A.1
+  excludeHolidaysAndWeekends: boolean; // Override global setting for this leave type
+  requiredDocuments: string[]; // Required documents for this leave type
 };
 
 export type ProsecutorOffice = {
@@ -267,28 +269,28 @@ export const PROSECUTOR_OFFICES: ProsecutorOffice[] = [
 
 export const LEAVE_TYPES: LeaveType[] = [
   // GROUP A
-  { id: "A1", label: "Κανονική άδεια", code: "αρ. 49 του ν. 3528/2007", group: "A", groupIndex: 1 },
-  { id: "A2", label: "Ειδική άδεια αιμοληψίας", code: "αρ. 50 παρ. 5 του ν. 3528/2007", group: "A", groupIndex: 2 },
-  { id: "A3", label: "Προσαύξηση κανονικής άδειας (παραμεθόριος)", code: "αρ. 48 παρ. 3 του ν. 3528/2007", group: "A", groupIndex: 3 },
-  { id: "A4", label: "Αδυναμία προσέλευσης (δυσμενείς καιρικές συνθήκες)", code: "αρ. 50 παρ. 11 του ν. 3528/2007", group: "A", groupIndex: 4 },
-  { id: "A5", label: "Παρακολούθηση σχολικής επίδοσης τέκνων", code: "αρ. 53 παρ. 6 του ν. 3528/2007", group: "A", groupIndex: 5 },
-  { id: "A6", label: "Ασθένεια τέκνων", code: "αρ. 53 παρ. 8 του ν. 3528/2007", group: "A", groupIndex: 6 },
-  { id: "A7", label: "Βραχυχρόνια αναρρωτική (έως 8 ημέρες)", code: "αρ. 55 παρ. 2 του ν. 3528/2007", group: "A", groupIndex: 7 },
-  { id: "A8", label: "Επιμορφωτική/Επιστημονική άδεια", code: "αρ. 59 του ν. 3528/2007", group: "A", groupIndex: 8 },
-  { id: "A9", label: "Φοιτητική άδεια (εξετάσεις)", code: "αρ. 60 του ν. 3528/2007", group: "A", groupIndex: 9 },
-  { id: "A10", label: "Παρουσία σε δίκη", code: "αρ. 50 παρ. 1 του ν. 3528/2007", group: "A", groupIndex: 10 },
+  { id: "A1", label: "Κανονική άδεια", code: "αρ. 49 του ν. 3528/2007", group: "A", groupIndex: 1, excludeHolidaysAndWeekends: false, requiredDocuments: [] },
+  { id: "A2", label: "Ειδική άδεια αιμοληψίας", code: "αρ. 50 παρ. 5 του ν. 3528/2007", group: "A", groupIndex: 2, excludeHolidaysAndWeekends: false, requiredDocuments: [] },
+  { id: "A3", label: "Προσαύξηση κανονικής άδειας (παραμεθόριος)", code: "αρ. 48 παρ. 3 του ν. 3528/2007", group: "A", groupIndex: 3, excludeHolidaysAndWeekends: false, requiredDocuments: [] },
+  { id: "A4", label: "Αδυναμία προσέλευσης (δυσμενείς καιρικές συνθήκες)", code: "αρ. 50 παρ. 11 του ν. 3528/2007", group: "A", groupIndex: 4, excludeHolidaysAndWeekends: false, requiredDocuments: [] },
+  { id: "A5", label: "Παρακολούθηση σχολικής επίδοσης τέκνων", code: "αρ. 53 παρ. 6 του ν. 3528/2007", group: "A", groupIndex: 5, excludeHolidaysAndWeekends: false, requiredDocuments: [] },
+  { id: "A6", label: "Ασθένεια τέκνων", code: "αρ. 53 παρ. 8 του ν. 3528/2007", group: "A", groupIndex: 6, excludeHolidaysAndWeekends: false, requiredDocuments: [] },
+  { id: "A7", label: "Βραχυχρόνια αναρρωτική (έως 8 ημέρες)", code: "αρ. 55 παρ. 2 του ν. 3528/2007", group: "A", groupIndex: 7, excludeHolidaysAndWeekends: false, requiredDocuments: [] },
+  { id: "A8", label: "Επιμορφωτική/Επιστημονική άδεια", code: "αρ. 59 του ν. 3528/2007", group: "A", groupIndex: 8, excludeHolidaysAndWeekends: false, requiredDocuments: [] },
+  { id: "A9", label: "Φοιτητική άδεια (εξετάσεις)", code: "αρ. 60 του ν. 3528/2007", group: "A", groupIndex: 9, excludeHolidaysAndWeekends: false, requiredDocuments: [] },
+  { id: "A10", label: "Παρουσία σε δίκη", code: "αρ. 50 παρ. 1 του ν. 3528/2007", group: "A", groupIndex: 10, excludeHolidaysAndWeekends: false, requiredDocuments: [] },
 
   // GROUP B
-  { id: "B1", label: "Γάμος / Θάνατος / Εκλογές / Πατρότητα", code: "αρ. 50 παρ. 1 του ν. 3528/2007", group: "B", groupIndex: 1 },
-  { id: "B2", label: "Νοσήματα / Αναπηρία (μεταγγίσεις, κλπ)", code: "αρ. 50 παρ. 2 του ν.3528/2007", group: "B", groupIndex: 2 },
-  { id: "B3", label: "Αναπηρία υπαλλήλου/τέκνου", code: "αρ. 50 παρ. 3 ν. 3528/2007", group: "B", groupIndex: 3 },
-  { id: "B4", label: "Δικαστικός συμπαραστάτης", code: "αρ. 50 παρ. 4 του ν. 3528/2007", group: "B", groupIndex: 4 },
-  { id: "B5", label: "Κακοήθεις νεοπλασίες", code: "αρ. 50 παρ. 10 του ν. 3528/2007", group: "B", groupIndex: 5 },
-  { id: "B6", label: "Άδεια άνευ αποδοχών", code: "αρ. 51 του ν. 3528/2007", group: "B", groupIndex: 6 },
-  { id: "B7", label: "Μητρότητα / Προγεννητικός έλεγχος", code: "αρ. 52 ν. 3528/2007", group: "B", groupIndex: 7 },
-  { id: "B8", label: "Διευκολύνσεις οικογενειακών υποχρεώσεων", code: "αρ. 53 του ν. 3528/2007", group: "B", groupIndex: 8 },
-  { id: "B9", label: "Αναρρωτική πέραν των 8 ημερών", code: "αρ. 56 παρ. 3 του ν. 3528/2007", group: "B", groupIndex: 9 },
-  { id: "B10", label: "Υπηρεσιακή εκπαίδευση", code: "αρ. 58 του ν. 3528/2007", group: "B", groupIndex: 10 },
+  { id: "B1", label: "Γάμος / Θάνατος / Εκλογές / Πατρότητα", code: "αρ. 50 παρ. 1 του ν. 3528/2007", group: "B", groupIndex: 1, excludeHolidaysAndWeekends: false, requiredDocuments: [] },
+  { id: "B2", label: "Νοσήματα / Αναπηρία (μεταγγίσεις, κλπ)", code: "αρ. 50 παρ. 2 του ν.3528/2007", group: "B", groupIndex: 2, excludeHolidaysAndWeekends: false, requiredDocuments: [] },
+  { id: "B3", label: "Αναπηρία υπαλλήλου/τέκνου", code: "αρ. 50 παρ. 3 ν. 3528/2007", group: "B", groupIndex: 3, excludeHolidaysAndWeekends: false, requiredDocuments: [] },
+  { id: "B4", label: "Δικαστικός συμπαραστάτης", code: "αρ. 50 παρ. 4 του ν. 3528/2007", group: "B", groupIndex: 4, excludeHolidaysAndWeekends: false, requiredDocuments: [] },
+  { id: "B5", label: "Κακοήθεις νεοπλασίες", code: "αρ. 50 παρ. 10 του ν. 3528/2007", group: "B", groupIndex: 5, excludeHolidaysAndWeekends: false, requiredDocuments: [] },
+  { id: "B6", label: "Άδεια άνευ αποδοχών", code: "αρ. 51 του ν. 3528/2007", group: "B", groupIndex: 6, excludeHolidaysAndWeekends: false, requiredDocuments: [] },
+  { id: "B7", label: "Μητρότητα / Προγεννητικός έλεγχος", code: "αρ. 52 ν. 3528/2007", group: "B", groupIndex: 7, excludeHolidaysAndWeekends: false, requiredDocuments: [] },
+  { id: "B8", label: "Διευκολύνσεις οικογενειακών υποχρεώσεων", code: "αρ. 53 του ν. 3528/2007", group: "B", groupIndex: 8, excludeHolidaysAndWeekends: false, requiredDocuments: [] },
+  { id: "B9", label: "Αναρρωτική πέραν των 8 ημερών", code: "αρ. 56 παρ. 3 του ν. 3528/2007", group: "B", groupIndex: 9, excludeHolidaysAndWeekends: false, requiredDocuments: [] },
+  { id: "B10", label: "Υπηρεσιακή εκπαίδευση", code: "αρ. 58 του ν. 3528/2007", group: "B", groupIndex: 10, excludeHolidaysAndWeekends: false, requiredDocuments: [] },
 ];
 
 export const HOLIDAYS: Holiday[] = [

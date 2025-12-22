@@ -11,6 +11,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LeaveType, ProsecutorOffice, Holiday } from "@/lib/data";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -51,6 +52,7 @@ export function SettingsDialog({
   const [editingHoliday, setEditingHoliday] = useState<Holiday | null>(null);
   const [importYear, setImportYear] = useState<string>("");
   const [isImporting, setIsImporting] = useState(false);
+  const [newRequiredDocument, setNewRequiredDocument] = useState<string>("");
 
   const handleSaveLeaveType = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -61,6 +63,8 @@ export function SettingsDialog({
       code: formData.get("code") as string,
       group: formData.get("group") as "A" | "B",
       groupIndex: parseInt(formData.get("groupIndex") as string),
+      excludeHolidaysAndWeekends: formData.get("excludeHolidaysAndWeekends") === "on",
+      requiredDocuments: editingLeaveType?.requiredDocuments || [],
     };
 
     if (editingLeaveType) {
@@ -70,6 +74,28 @@ export function SettingsDialog({
     }
     setEditingLeaveType(null);
     e.currentTarget.reset();
+    setNewRequiredDocument("");
+  };
+
+  const addRequiredDocument = () => {
+    if (newRequiredDocument.trim() && editingLeaveType) {
+      const updatedLeaveType = {
+        ...editingLeaveType,
+        requiredDocuments: [...editingLeaveType.requiredDocuments, newRequiredDocument.trim()]
+      };
+      setEditingLeaveType(updatedLeaveType);
+      setNewRequiredDocument("");
+    }
+  };
+
+  const removeRequiredDocument = (index: number) => {
+    if (editingLeaveType) {
+      const updatedLeaveType = {
+        ...editingLeaveType,
+        requiredDocuments: editingLeaveType.requiredDocuments.filter((_, i) => i !== index)
+      };
+      setEditingLeaveType(updatedLeaveType);
+    }
   };
 
   const handleSaveOffice = (e: React.FormEvent<HTMLFormElement>) => {
@@ -156,32 +182,95 @@ export function SettingsDialog({
           </TabsList>
 
           <TabsContent value="leave-types" className="space-y-4">
-            <form onSubmit={handleSaveLeaveType} className="grid grid-cols-2 gap-4 p-4 border rounded-lg bg-muted/50">
-              <div className="space-y-2">
-                <Label>Τίτλος Άδειας</Label>
-                <Input name="label" defaultValue={editingLeaveType?.label} required />
+            <form onSubmit={handleSaveLeaveType} className="space-y-4 p-4 border rounded-lg bg-muted/50">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Τίτλος Άδειας</Label>
+                  <Input name="label" defaultValue={editingLeaveType?.label} required />
+                </div>
+                <div className="space-y-2">
+                  <Label>Νομικό Πλαίσιο (Code)</Label>
+                  <Input name="code" defaultValue={editingLeaveType?.code} required />
+                </div>
+                <div className="space-y-2">
+                  <Label>Ομάδα</Label>
+                  <Select name="group" defaultValue={editingLeaveType?.group || "A"}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="A">Ομάδα Α</SelectItem>
+                      <SelectItem value="B">Ομάδα Β</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Αύξων Αριθμός Ομάδας</Label>
+                  <Input name="groupIndex" type="number" defaultValue={editingLeaveType?.groupIndex || 1} required />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label>Νομικό Πλαίσιο (Code)</Label>
-                <Input name="code" defaultValue={editingLeaveType?.code} required />
+              
+              {/* Exclusion Settings */}
+              <div className="space-y-3 p-3 border rounded bg-background">
+                <Label className="text-sm font-medium">Ρυθμίσεις Ημερών</Label>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="excludeHolidaysAndWeekends"
+                    name="excludeHolidaysAndWeekends"
+                    defaultChecked={editingLeaveType?.excludeHolidaysAndWeekends || false}
+                  />
+                  <Label htmlFor="excludeHolidaysAndWeekends" className="text-sm">
+                    Εξαίρεση αργιών και σαββατοκύριακων για αυτό το είδος άδειας
+                  </Label>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Εάν ενεργοποιηθεί, θα αντικαθιστά την καθολική ρύθμιση
+                </p>
               </div>
-              <div className="space-y-2">
-                <Label>Ομάδα</Label>
-                <Select name="group" defaultValue={editingLeaveType?.group || "A"}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="A">Ομάδα Α</SelectItem>
-                    <SelectItem value="B">Ομάδα Β</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Αύξων Αριθμός Ομάδας</Label>
-                <Input name="groupIndex" type="number" defaultValue={editingLeaveType?.groupIndex || 1} required />
-              </div>
-              <div className="col-span-2 flex justify-end gap-2">
+
+              {/* Required Documents */}
+              {editingLeaveType && (
+                <div className="space-y-3 p-3 border rounded bg-background">
+                  <Label className="text-sm font-medium">Υποχρεωτικά Έγγραφα</Label>
+                  <div className="flex gap-2">
+                    <Input 
+                      value={newRequiredDocument}
+                      onChange={(e) => setNewRequiredDocument(e.target.value)}
+                      placeholder="Τίτλος εγγράφου..."
+                      className="flex-1"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addRequiredDocument();
+                        }
+                      }}
+                    />
+                    <Button type="button" onClick={addRequiredDocument} size="sm">
+                      <Plus className="h-4 w-4 mr-1" /> Προσθήκη
+                    </Button>
+                  </div>
+                  {editingLeaveType.requiredDocuments.length > 0 && (
+                    <div className="space-y-1">
+                      {editingLeaveType.requiredDocuments.map((doc, index) => (
+                        <div key={index} className="flex items-center justify-between bg-muted p-2 rounded text-sm">
+                          <span>{doc}</span>
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => removeRequiredDocument(index)}
+                            className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              <div className="flex justify-end gap-2">
                 {editingLeaveType && (
                   <Button type="button" variant="ghost" onClick={() => setEditingLeaveType(null)}>
                     <X className="h-4 w-4 mr-2" /> Ακύρωση
