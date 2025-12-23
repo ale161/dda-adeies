@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -36,6 +36,8 @@ import { LeaveApplicationData } from "@/lib/data";
 import { generatePDF } from "@/lib/pdf-generator";
 import { useSettings } from "@/hooks/useSettings";
 import { SettingsDialog } from "@/components/SettingsDialog";
+import { VersionInfoDialog } from "@/components/VersionInfoDialog";
+import { getCurrentVersion } from "@/lib/version";
 
 const formSchema = z.object({
   officeId: z.string().min(1, "Επιλέξτε εισαγγελία"),
@@ -68,6 +70,24 @@ export default function Home() {
 
   const [attachments, setAttachments] = useState<string[]>([]);
   const [newAttachment, setNewAttachment] = useState("");
+  const [currentVersion, setCurrentVersion] = useState<string>("1.0.0");
+  const [isLoadingVersion, setIsLoadingVersion] = useState(true);
+
+  // Load version from package.json on component mount
+  useEffect(() => {
+    const loadVersion = async () => {
+      try {
+        const version = await getCurrentVersion();
+        setCurrentVersion(version);
+      } catch (error) {
+        console.warn('Could not load version from package.json:', error);
+        setCurrentVersion("1.0.0");
+      } finally {
+        setIsLoadingVersion(false);
+      }
+    };
+    loadVersion();
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -210,7 +230,15 @@ export default function Home() {
         <div className="max-w-2xl mx-auto space-y-8">
           <div className="flex justify-between items-start">
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight text-primary">Αίτηση Άδειας</h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-3xl font-bold tracking-tight text-primary">Αίτηση Άδειας</h1>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground font-mono">
+                    v{currentVersion}{isLoadingVersion && ""}
+                  </span>
+                  <VersionInfoDialog currentVersion={currentVersion} />
+                </div>
+              </div>
               <p className="text-muted-foreground">
                 Συμπληρώστε τα στοιχεία για την έκδοση της αίτησης άδειας Δικαστικής Αστυνομίας.
               </p>
