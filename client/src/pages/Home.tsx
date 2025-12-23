@@ -107,25 +107,27 @@ export default function Home() {
     ? differenceInDays(watchAllFields.dateTo, watchAllFields.dateFrom) + 1 
     : 0;
 
-  // Calculate working days (excluding holidays and weekends if option is enabled)
+  // Calculate working days and excluded days (excluding holidays and weekends if option is enabled)
   const calculateWorkingDays = () => {
     if (!watchAllFields.dateFrom || !watchAllFields.dateTo) {
-      return daysCount;
+      return { workingDays: daysCount, excludedDays: [] };
     }
 
     // Get the selected leave type to check for override setting
     const selectedLeaveType = leaveTypes.find(lt => lt.id === watchAllFields.leaveTypeId);
     
-    // Use leave-type specific setting if available, otherwise use global setting
-    const shouldExclude = selectedLeaveType?.excludeHolidaysAndWeekends !== undefined 
-      ? selectedLeaveType.excludeHolidaysAndWeekends 
+    // Only use leave-type specific setting if it's explicitly set to true
+    // If it's false or undefined, use the global setting
+    const shouldExclude = selectedLeaveType?.excludeHolidaysAndWeekends === true
+      ? true 
       : excludeHolidaysAndWeekends;
     
     if (!shouldExclude) {
-      return daysCount;
+      return { workingDays: daysCount, excludedDays: [] };
     }
 
     let workingDays = 0;
+    const excludedDays: Array<{date: string, reason: string, type: 'holiday' | 'weekend'}> = [];
     const current = new Date(watchAllFields.dateFrom);
     
     while (current <= watchAllFields.dateTo) {
@@ -136,29 +138,46 @@ export default function Home() {
       const dateString = current.toISOString().split('T')[0]; // YYYY-MM-DD format
       const monthDay = current.toISOString().slice(5, 10); // MM-DD format
       
-      const isHoliday = holidays.some(holiday => {
-        if (holiday.isFixed) {
+      const holiday = holidays.find(h => {
+        if (h.isFixed) {
           // For fixed holidays, check if month-day matches
-          return holiday.date === monthDay;
+          return h.date === monthDay;
         } else {
           // For specific dates, check full date
-          return holiday.date === dateString;
+          return h.date === dateString;
         }
       });
       
       // Count the day if it's not a weekend and not a holiday
-      if (!isWeekend && !isHoliday) {
+      if (!isWeekend && !holiday) {
         workingDays++;
+      } else {
+        // Add to excluded days list
+        const formattedDate = format(current, "dd/MM/yyyy", { locale: el });
+        if (isWeekend) {
+          const dayName = current.getDay() === 0 ? "Κυριακή" : "Σάββατο";
+          excludedDays.push({
+            date: formattedDate,
+            reason: dayName,
+            type: 'weekend'
+          });
+        } else if (holiday) {
+          excludedDays.push({
+            date: formattedDate,
+            reason: holiday.name,
+            type: 'holiday'
+          });
+        }
       }
       
       // Move to next day
       current.setDate(current.getDate() + 1);
     }
     
-    return workingDays;
+    return { workingDays, excludedDays };
   };
 
-  const finalDaysCount = calculateWorkingDays();
+  const { workingDays: finalDaysCount, excludedDays } = calculateWorkingDays();
 
   const addAttachment = () => {
     if (newAttachment.trim()) {
@@ -449,24 +468,71 @@ export default function Home() {
                     <div className="flex items-center space-x-2">
                       <Checkbox 
                         id="exclude-holidays-weekends" 
-                        checked={excludeHolidaysAndWeekends}
-                        onCheckedChange={(checked) => setExcludeHolidaysAndWeekends(checked as boolean)}
+                        disabled={(() => {
+                          // Get the selected leave type to check for override setting
+                          const selectedLeaveType = leaveTypes.find(lt => lt.id === watchAllFields.leaveTypeId);
+                          // Disable checkbox if leave-type specific override is active
+                          return selectedLeaveType?.excludeHolidaysAndWeekends === true;
+                        })()}
+                        checked={(() => {
+                          // Get the selected leave type to check for override setting
+                          const selectedLeaveType = leaveTypes.find(lt => lt.id === watchAllFields.leaveTypeId);
+                          // Only use leave-type specific setting if it's explicitly set to true
+                          // If it's false or undefined, use the global setting
+                          return selectedLeaveType?.excludeHolidaysAndWeekends === true
+                            ? true 
+                            : excludeHolidaysAndWeekends;
+                        })()}
+                        onCheckedChange={(checked) => {
+                          // Only update global setting if no leave-type specific override is active
+                          const selectedLeaveType = leaveTypes.find(lt => lt.id === watchAllFields.leaveTypeId);
+                          if (selectedLeaveType?.excludeHolidaysAndWeekends !== true) {
+                            setExcludeHolidaysAndWeekends(checked as boolean);
+                          }
+                        }}
                       />
                       <label 
                         htmlFor="exclude-holidays-weekends" 
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${
+                          (() => {
+                            const selectedLeaveType = leaveTypes.find(lt => lt.id === watchAllFields.leaveTypeId);
+                            return selectedLeaveType?.excludeHolidaysAndWeekends === true ? 'text-muted-foreground' : '';
+                          })()
+                        }`}
                       >
                         Εξαίρεση αργιών και Σαββατοκύριακων
+                        {(() => {
+                          const selectedLeaveType = leaveTypes.find(lt => lt.id === watchAllFields.leaveTypeId);
+                          return selectedLeaveType?.excludeHolidaysAndWeekends === true ? 
+                            <span className="text-xs text-blue-600 ml-2">(συγκεκριμένο για τον τύπο άδειας)</span> : null;
+                        })()}
                       </label>
                     </div>
                     <div className="text-sm font-medium text-primary bg-primary/10 p-2 rounded inline-block">
                       Σύνολο ημερών: {finalDaysCount}
-                      {excludeHolidaysAndWeekends && finalDaysCount !== daysCount && (
+                      {excludedDays.length > 0 && (
                         <span className="text-xs text-muted-foreground ml-2">
                           (σύνολο με αργίες και σαββατοκύριακα: {daysCount})
                         </span>
                       )}
                     </div>
+                    
+                    {/* Excluded Days List */}
+                    {excludedDays.length > 0 && (
+                      <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                        <p className="text-sm font-medium text-yellow-800 mb-2">Εξαιρούμενες μέρες:</p>
+                        <div className="text-xs text-yellow-700 space-y-1 max-h-32 overflow-y-auto">
+                          {excludedDays.map((day, index) => (
+                            <div key={index} className="flex justify-between items-center">
+                              <span>{day.date}</span>
+                              <span className="ml-2 text-yellow-600">
+                                ({day.type === 'holiday' ? 'Αργία' : 'Σαββατοκύριακο'} - {day.reason})
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
