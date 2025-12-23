@@ -37,6 +37,7 @@ import { generatePDF } from "@/lib/pdf-generator";
 import { useSettings } from "@/hooks/useSettings";
 import { SettingsDialog } from "@/components/SettingsDialog";
 import { VersionInfoDialog } from "@/components/VersionInfoDialog";
+import { PrintDialog } from "@/components/PrintDialog";
 import { getCurrentVersion } from "@/lib/version";
 
 const formSchema = z.object({
@@ -72,6 +73,7 @@ export default function Home() {
   const [newAttachment, setNewAttachment] = useState("");
   const [currentVersion, setCurrentVersion] = useState<string>("1.0.0");
   const [isLoadingVersion, setIsLoadingVersion] = useState(true);
+  const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
 
   // Load version from package.json on component mount
   useEffect(() => {
@@ -222,6 +224,27 @@ export default function Home() {
     };
     generatePDF(data, { leaveTypes, offices });
   };
+
+  const handlePrint = (values: z.infer<typeof formSchema>) => {
+    const office = offices.find(o => o.id === values.officeId);
+    const data: LeaveApplicationData = {
+      ...values,
+      reason: values.reason || "",
+      daysCount: finalDaysCount > 0 ? finalDaysCount : 0,
+      attachments,
+      location: office?.city || "ΑΘΗΝΑ",
+      dateRequest: new Date(),
+    };
+    setIsPrintDialogOpen(true);
+  };
+
+  // Check if form is valid for printing
+  const isFormValidForPrint = form.formState.isValid && 
+    watchAllFields.officeId && 
+    watchAllFields.leaveTypeId && 
+    watchAllFields.applicantName && 
+    watchAllFields.dateFrom && 
+    watchAllFields.dateTo;
 
   return (
     <div className="min-h-screen bg-background flex flex-col lg:flex-row font-sans text-foreground">
@@ -615,10 +638,26 @@ export default function Home() {
               </div>
 
               <div className="pt-6">
-                <Button type="submit" size="lg" className="w-full md:w-auto font-bold text-lg h-12 px-8 shadow-lg hover:shadow-xl transition-all">
-                  <Printer className="w-5 h-5 mr-2" />
-                  Εκτύπωση PDF
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="lg" 
+                    className="flex-1 font-bold text-lg h-12 shadow-lg hover:shadow-xl transition-all"
+                    onClick={() => form.handleSubmit(handlePrint)()}
+                    disabled={!isFormValidForPrint}
+                  >
+                    🖨️ Εκτύπωση
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    size="lg" 
+                    className="flex-1 font-bold text-lg h-12 shadow-lg hover:shadow-xl transition-all"
+                  >
+                    <Printer className="w-5 h-5 mr-2" />
+                    Εκτύπωση PDF
+                  </Button>
+                </div>
               </div>
             </form>
           </Form>
@@ -750,6 +789,22 @@ export default function Home() {
           )}
         </div>
       </div>
+
+      {/* Print Dialog */}
+      <PrintDialog
+        open={isPrintDialogOpen}
+        onOpenChange={setIsPrintDialogOpen}
+        data={{
+          ...watchAllFields,
+          reason: watchAllFields.reason || "",
+          daysCount: finalDaysCount > 0 ? finalDaysCount : 0,
+          attachments,
+          location: offices.find(o => o.id === watchAllFields.officeId)?.city || "ΑΘΗΝΑ",
+          dateRequest: new Date(),
+        }}
+        leaveTypes={leaveTypes}
+        offices={offices}
+      />
     </div>
   );
 }
